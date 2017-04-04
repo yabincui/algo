@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "priority_queue.h"
 #include "timer.h"
 #include "utils.h"
 
@@ -65,6 +66,39 @@ void findKthBySelect(void* arg) {
   data->res = buf[k-1];
 }
 
+
+bool compareIntReverse(const void* a1, const void* a2) {
+  int v1 = *(const int*)a1;
+  int v2 = *(const int*)a2;
+  return v1 > v2;
+}
+
+void findKthByPriorityQueue(void* arg) {
+  struct SelectData* data = (struct SelectData*)arg;
+  int* s = data->s;
+  int n = data->n;
+  int k = data->k;
+  if (k <= 0 || k > n) {
+    data->res = -1;
+    return;
+  }
+  priority_queue_t q = createPriorityQueue(sizeof(int), compareIntReverse);
+  for (int i = 0; i < n; ++i) {
+    if (priorityQueueSize(q) < k) {
+      priorityQueuePush(q, &s[i]);
+    } else {
+      int v;
+      priorityQueueTop(q, &v);
+      if (s[i] < v) {
+        priorityQueuePush(q, &s[i]);
+        priorityQueuePop(q, &v);
+      }
+    }
+  }
+  priorityQueuePop(q, &data->res);
+  destroyPriorityQueue(q);
+}
+
 void findKthByBinarySearch(void* arg) {
   struct SelectData* data = (struct SelectData*)arg;
   int* s = data->s;
@@ -104,6 +138,15 @@ void findKthByBinarySearch(void* arg) {
   data->res = s[0];
 }
 
+struct TestMethod {
+  const char* name;
+  SelectFuncType func;
+} table[] = {
+  { "sort", &findKthBySort},
+  { "select", &findKthBySelect},
+  { "priority_queue", &findKthByPriorityQueue},
+  { "binary_search", &findKthByBinarySearch},
+};
 
 int main() {
   static int s[1000000];
@@ -111,23 +154,23 @@ int main() {
   for (int i = 0; i < sizeof(s) / sizeof(s[0]); ++i) {
     s[i] = i+1;
   }
-  printf("n\tsort\tselect\tbinary_search\n");
+  int table_size = sizeof(table) / sizeof(table[0]);
+  printf("n");
+  for (int i = 0; i < table_size; ++i) {
+    printf("\t%s", table[i].name);
+  }
+  printf("\n");
   for (int n = 10; n <= 1000000; n *= 2) {
     shuffle(s, n, sizeof(int));
-    double times[3];
-    SelectFuncType funcs[3] = {
-      &findKthBySort,
-      &findKthBySelect,
-      &findKthByBinarySearch,
-    };
-    for (int i = 0; i < 3; ++i) {
+    double times[table_size];
+    for (int i = 0; i < table_size; ++i) {
       memcpy(tmp, s, n * sizeof(int));
       struct SelectData data;
       data.s = tmp;
       data.n = n;
       data.k = n / 2;
       data.res = 0;
-      double time = runMethodWithTimeout(5000, funcs[i], &data);
+      double time = runMethodWithTimeout(5000, table[i].func, &data);
       if (time > 0) {
         if (data.res != n / 2) {
           time = -2;
@@ -135,6 +178,10 @@ int main() {
       }
       times[i] = time;
     }
-    printf("%d\t%.6fs\t%.6fs\t%.6fs\n", n, times[0], times[1], times[2]);
+    printf("%d", n);
+    for (int i = 0; i < table_size; ++i) {
+      printf("\t%.6fs", times[i]);
+    }
+    printf("\n");
   }
 }

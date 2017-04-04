@@ -48,3 +48,7 @@ void swap(void* s, int i, int j, int elem_size) {
   memcpy(a, b, elem_size);
   memcpy(b, tmp, elem_size);
 }
+
+int maxInt(int a, int b) {
+  return a < b ? b : a;
+}

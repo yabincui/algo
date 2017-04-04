@@ -9,4 +9,6 @@ int rand32();
 void shuffle(void* s, int n, int elem_size);
 void swap(void* s, int i, int j, int elem_size);
 
+int maxInt(int a, int b);
+
 #endif  // _DS_UTILS_H
