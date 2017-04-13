@@ -33,9 +33,13 @@ int rand32() {
   return (b << 16) | a;
 }
 
+int randInt(int begin, int end) {
+	return begin + rand32() % (end - begin + 1);
+}
+
 void shuffle(void* s, int n, int elem_size) {
   for (int i = 0; i < n; ++i) {
-    int t = rand32() % n;
+    int t = i + rand32() % (n - i);
     swap(s, i, t, elem_size);
   }
 }
@@ -49,6 +53,41 @@ void swap(void* s, int i, int j, int elem_size) {
   memcpy(b, tmp, elem_size);
 }
 
+void swapTwo(void* a, void* b, int size) {
+	char tmp[size];
+	memcpy(tmp, a, size);
+	memcpy(a, b, size);
+	memcpy(b, tmp, size);
+}
+
 int maxInt(int a, int b) {
   return a < b ? b : a;
+}
+
+int cmpInt(const void* a, const void* b) {
+	int v1 = *(int*)a;
+	int v2 = *(int*)b;
+	if (v1 != v2) {
+		return v1 > v2 ? 1 : -1;
+	}
+	return 0;
+}
+
+const void* bsearchLowBound(const void* s, int nmemb, int elem_size, const void* key,
+		int (*cmp)(const void*, const void*)) {
+	int low = 0;
+	int high = nmemb - 1;
+	while (low < high) {
+		int mid = low + (high - low) / 2;
+		int cmp_res = cmp(s + mid * elem_size, key);
+		if (cmp_res < 0) {
+			low = mid + 1;
+		} else {
+			high = mid;
+		}
+	}
+	if (cmp(s + high * elem_size, key) >= 0) {
+		return s + high * elem_size;
+	}
+	return NULL;
 }

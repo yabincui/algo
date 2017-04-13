@@ -1,12 +1,16 @@
 
-all: timer_test priority_queue_test t1_1 trie_test t1_2 t1_3 t1_4
+srcs := $(wildcard *_test.c t1_*.c t2_*.c t3_*.c)
+targets := $(patsubst %.c,%,$(srcs))
+$(warning srcs = $(srcs))
+$(warning targets = $(targets))
+
+all: $(targets)
 
 CFLAGS := -g
 LDFLAGS := -lpthread -lrt -g
 
 %.o : %.c Makefile
 	gcc -c -o $@ $< $(CFLAGS)
-
 
 timer_test: timer_test.o timer.o utils.o
 	gcc -o $@ $^ $(LDFLAGS)
@@ -17,17 +21,11 @@ priority_queue_test: priority_queue_test.o priority_queue.o utils.o
 trie_test: trie_test.o trie.o
 	gcc -o $@ $^ $(LDFLAGS)
 
-t1_1: t1_1.o timer.o utils.o priority_queue.o
-	gcc -o $@ $^ $(LDFLAGS)
+libutil.a: timer.o priority_queue.o utils.o trie.o
+	ar -rs $@ $^
 
-t1_2: t1_2.o trie.o
-	gcc -o $@ $^ $(LDFLAGS)
-
-t1_3: t1_3.o
-	gcc -o $@ $^ $(LDFLAGS)
-	
-t1_4: t1_4.o
-	gcc -o $@ $^ $(LDFLAGS)
+t% : t%.o libutil.a
+	gcc -o $@ $@.o -L. -lutil $(LDFLAGS)
 
 clean:
 	rm -rf timer_test *.o
