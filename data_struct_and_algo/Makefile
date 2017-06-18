@@ -4,12 +4,14 @@ targets := $(patsubst %.c,%,$(srcs))
 $(warning srcs = $(srcs))
 $(warning targets = $(targets))
 
+headers := $(wildcard *.h)
+
 all: $(targets)
 
 CFLAGS := -g
 LDFLAGS := -lpthread -lrt -g
 
-%.o : %.c Makefile
+%.o : %.c Makefile $(headers)
 	gcc -c -o $@ $< $(CFLAGS)
 
 timer_test: timer_test.o timer.o utils.o
