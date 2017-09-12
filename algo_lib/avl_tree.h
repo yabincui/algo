@@ -37,9 +37,11 @@ public:
 		root_ = NULL;
 	}
 	
+
 	~AVLTree() {
 		eraseTree(root_);
 	}
+
 	
 	bool empty() const {
 		return root_ == NULL;
@@ -49,8 +51,13 @@ public:
 		return getSize(root_);
 	}
 
+	
+	const AVLNode* getRoot() {
+		return root_;
+	}
+	
+
 	void insert(const T& value) {
-		//printf("insert %d\n", value);
 		AVLNode* parent = NULL;
 		AVLNode** cur = &root_;
 		while (*cur != NULL) {
@@ -64,13 +71,8 @@ public:
 		}
 		*cur = newNode(value, parent);
 		makeBalance(*cur);
-		//checkValid();
 	}
-	
-	const AVLNode* getRoot() const {
-		return root_;
-	}
-	
+
 	AVLNode* findNode(const T& value) {
 		//printf("find %d\n", value);
 		AVLNode* cur = root_;
@@ -127,6 +129,14 @@ public:
 		return NULL;
 	}
 	
+	// Start from 0.
+	AVLNode* findNodeAtPosition(int position) {
+		if (position >= getSize(root_)) {
+			return NULL;
+		}
+		return findNodeAtPositionInner(root_, position);
+	}
+
 	void erase(const T& value) {
 		AVLNode* node = findNode(value);
 		if (node) {
@@ -273,7 +283,7 @@ private:
 		//printf("makeBalance end\n");
 	}
 	
-	int getHeight(AVLNode* node) {
+	int getHeight(AVLNode* node) const {
 		return node ? node->height : -1;
 	}
 	
@@ -326,7 +336,7 @@ private:
 		}
 	}
 	
-	int getSize(AVLNode* node) {
+	int getSize(AVLNode* node) const {
 		return node ? node->size : 0;
 	}
 	
@@ -362,6 +372,18 @@ private:
 		}
 	}
 	
+	AVLNode* findNodeAtPositionInner(AVLNode* cur, int position) {
+		if (getSize(cur->left) > position) {
+			return findNodeAtPositionInner(cur->left, position);
+		}
+		position -= getSize(cur->left);
+		if (position == 0) {
+			return cur;
+		}
+		position--;
+		return findNodeAtPositionInner(cur->right, position);
+	}
+
 	bool checkValid(AVLNode* cur, AVLNode*& prev_node) {
 		if (cur) {
 			if (cur->left == cur || cur->right == cur || (cur->left != NULL && cur->left == cur->right)) {

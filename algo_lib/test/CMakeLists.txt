@@ -1,7 +1,7 @@
 
 cmake_minimum_required (VERSION 2.6)
 
-set (SOURCES geometry_test.cpp avl_tree_test.cpp)
+set (SOURCES geometry_test.cpp avl_tree_test.cpp skiplist_test.cpp)
 
 add_compile_options(-std=c++11 -g)
 
